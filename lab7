@@ -1,0 +1,80 @@
+import tkinter as tk
+from tkinter import messagebox, scrolledtext
+from itertools import combinations
+import time
+
+def generate_discount_lists(articles, min_discount_items, max_discount_items):
+    """Генерирует все возможные варианты списков товаров для скидок."""
+    discount_lists = []
+    for num_items in range(min_discount_items, max_discount_items + 1):
+        for subset in combinations(articles, num_items):
+            discount_lists.append(subset)
+    return discount_lists
+
+def run():
+    try:
+        k = int(entry_k.get())  # Количество артикулов
+        min_discount_items = int(entry_min.get())  # Минимальное количество товаров для скидки
+        max_discount_items = int(entry_max.get())  # Максимальное количество товаров для скидки
+
+        if min_discount_items < 0 or max_discount_items < 0:
+            raise ValueError("Минимальное и максимальное количество товаров для скидки должно быть положительным")
+
+        if min_discount_items > max_discount_items:
+            raise ValueError("Минимальное количество товаров для скидки не может быть больше максимального")
+
+        if max_discount_items > k:
+            raise ValueError("Максимальное количество товаров для скидки не может превышать общее количество артикулов")
+
+        start_time = time.time()
+
+        # Формируем список артикулов (от 1 до K)
+        articles = list(range(1, k + 1))
+
+        # Генерируем все возможные списки товаров для скидок
+        discount_lists = generate_discount_lists(articles, min_discount_items, max_discount_items)
+
+        time_taken = time.time() - start_time
+
+        # Создаем новое окно для вывода результатов
+        result_window = tk.Toplevel(root)
+        result_window.title("Списки товаров для скидок")
+
+        # Создаем скроллируемое текстовое поле
+        output_text = scrolledtext.ScrolledText(result_window, height=25, width=80, wrap=tk.WORD)
+        output_text.pack(padx=10, pady=10)
+
+        output_text.insert(tk.END, f"Всего артикулов: {k}\n")
+        output_text.insert(tk.END, f"Мин. товаров для скидки: {min_discount_items}\n")
+        output_text.insert(tk.END, f"Макс. товаров для скидки: {max_discount_items}\n\n")
+        output_text.insert(tk.END, "Возможные списки товаров для скидок:\n")
+
+        for discount_list in discount_lists:
+            output_text.insert(tk.END, f"{discount_list}\n")
+
+        output_text.insert(tk.END, f"\nВсего вариантов списков: {len(discount_lists)}\n")
+        output_text.insert(tk.END, f"\nВремя выполнения: {time_taken:.6f} сек\n")
+
+    except ValueError as e:
+        messagebox.showerror("Ошибка ввода", str(e))
+
+
+# Основное GUI
+root = tk.Tk()
+root.title("Генератор списков товаров для скидок")
+
+tk.Label(root, text="Количество артикулов (K):").grid(row=0, column=0, sticky="w")
+entry_k = tk.Entry(root)
+entry_k.grid(row=0, column=1)
+
+tk.Label(root, text="Мин. количество товаров для скидки (T):").grid(row=1, column=0, sticky="w")
+entry_min = tk.Entry(root)
+entry_min.grid(row=1, column=1)
+
+tk.Label(root, text="Макс. количество товаров для скидки (N):").grid(row=2, column=0, sticky="w")
+entry_max = tk.Entry(root)
+entry_max.grid(row=2, column=1)
+
+tk.Button(root, text="Сгенерировать", command=run).grid(row=3, column=0, columnspan=2, pady=10)
+
+root.mainloop()
